@@ -21,7 +21,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'Some College',
         "Bachelor's Degree",
         "Master's Degree",
-        'Other'
+        'Other' 
       ]
     },
     {
