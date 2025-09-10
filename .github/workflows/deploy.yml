@@ -5,11 +5,20 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-deploy:
+  sync-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Mirror to second repo
+      run: |
+        git remote add mirror https://github.com/myouthful/TECH-Bootcamp-Portal.git
+        git push mirror main --force
+      env:
+        GITHUB_TOKEN: ${{ secrets.MIRROR_TOKEN }}
     
     - uses: subosito/flutter-action@v2
       with:
