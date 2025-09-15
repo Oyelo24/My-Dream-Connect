@@ -1,32 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodels/dashboard_viewmodel.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DashboardViewModel>().loadDashboardData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome section
-              Row(
+        child: Consumer<DashboardViewModel>(
+          builder: (context, dashboardViewModel, child) {
+            if (dashboardViewModel.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            
+            if (dashboardViewModel.error != null) {
+              return Center(child: Text(dashboardViewModel.error!));
+            }
+            
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Welcome back, Alex Johnson! ',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                  // Welcome section
+                  Row(
+                    children: [
+                      Text(
+                        'Welcome back, ${dashboardViewModel.userName}! ',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const Text('👋', style: TextStyle(fontSize: 20)),
+                    ],
                   ),
-                  const Text('👋', style: TextStyle(fontSize: 20)),
-                ],
-              ),
               const SizedBox(height: 4),
               const Text(
                 'Ready to continue your learning journey?',
@@ -47,13 +72,13 @@ class DashboardScreen extends StatelessWidget {
                         color: Colors.green,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Column(
+                      child: Column(
                         children: [
                           Icon(Icons.calendar_today, color: Colors.white, size: 24),
                           SizedBox(height: 8),
                           Text(
-                            '85%',
-                            style: TextStyle(
+                            '${(dashboardViewModel.attendance * 100).toInt()}%',
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -78,19 +103,19 @@ class DashboardScreen extends StatelessWidget {
                         color: const Color(0xFF4A90E2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Column(
+                      child: Column(
                         children: [
-                          Icon(Icons.school, color: Colors.white, size: 24),
-                          SizedBox(height: 8),
+                          const Icon(Icons.school, color: Colors.white, size: 24),
+                          const SizedBox(height: 8),
                           Text(
-                            'A-',
-                            style: TextStyle(
+                            dashboardViewModel.overallGrade,
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
-                          Text(
+                          const Text(
                             'Overall Grade',
                             style: TextStyle(
                               fontSize: 14,
@@ -121,22 +146,22 @@ class DashboardScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              const Text(
-                '12 of 15 completed',
-                style: TextStyle(
+              Text(
+                '${dashboardViewModel.completedAssessments} of ${dashboardViewModel.totalAssessments} completed',
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
                 ),
               ),
               const SizedBox(height: 12),
               LinearProgressIndicator(
-                value: 0.8,
+                value: dashboardViewModel.assessmentProgress,
                 backgroundColor: Colors.grey[200],
                 valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4A90E2)),
                 minHeight: 8,
               ),
               const SizedBox(height: 8),
-              const Row(
+               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
@@ -144,8 +169,8 @@ class DashboardScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                   Text(
-                    '80%',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    '${(dashboardViewModel.assessmentProgress * 100).toInt()}%',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
               ),
@@ -167,97 +192,53 @@ class DashboardScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 4,
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'JavaScript Fundamentals',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        Text(
-                          'Tomorrow',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      'Quiz',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
+              ...dashboardViewModel.upcomingAssessments.map((assessment) => 
+                Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1,
+                        blurRadius: 4,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 4,
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'React Components',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            assessment['title']!,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Dec 15',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
+                          Text(
+                            assessment['date']!,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      'Project',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
+                        ],
                       ),
-                    ),
-                  ],
+                      Text(
+                        assessment['type']!,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
@@ -278,30 +259,22 @@ class DashboardScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              _buildActivityItem(
-                'Completed HTML/CSS Assessment',
-                '2 days ago',
-                '95%',
-                Colors.blue,
-              ),
-              _buildActivityItem(
-                'Attended Web Development Workshop',
-                '5 days ago',
-                null,
-                Colors.blue,
-              ),
-              _buildActivityItem(
-                'Submitted Portfolio Project',
-                '1 week ago',
-                '88%',
-                Colors.blue,
+              ...dashboardViewModel.recentActivity.map((activity) => 
+                _buildActivityItem(
+                  activity['title'],
+                  activity['time'],
+                  activity['score'],
+                  Colors.blue,
+                ),
               ),
               const SizedBox(height: 100),
-            ],
-          ),
+                  const SizedBox(height: 100),
+                ],
+              ),
+            );
+          },
         ),
       ),
-
     );
   }
 

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'utils/app_routes.dart';
 import 'utils/app_theme.dart';
-import 'viewmodels/home_view_model.dart';
-import 'viewmodels/auth_view_model.dart';
+import 'viewmodels/auth_viewmodel.dart';
+import 'viewmodels/data_viewmodel.dart';
+import 'viewmodels/dashboard_viewmodel.dart';
+import 'viewmodels/attendance_viewmodel.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,8 +18,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => HomeViewModel()),
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => DataViewModel()),
+        ChangeNotifierProvider(create: (_) => DashboardViewModel()),
+        ChangeNotifierProvider(create: (_) => AttendanceViewModel()),
       ],
       child: MaterialApp(
         title: 'MDC',

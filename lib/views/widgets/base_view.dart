@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/base_view_model.dart';
+import '../../viewmodels/base_viewmodel.dart';
 
 class BaseView<T extends BaseViewModel> extends StatefulWidget {
   final Widget Function(BuildContext context, T viewModel, Widget? child) builder;

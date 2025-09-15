@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodels/attendance_viewmodel.dart';
 
 class AttendanceScreen extends StatelessWidget {
   const AttendanceScreen({super.key});
@@ -43,10 +45,10 @@ class AttendanceScreen extends StatelessWidget {
                 color: const Color(0xFF4A90E2),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Column(
+              child: Column(
                 children: [
                   Text(
-                    '84%',
+                    '${(context.watch<AttendanceViewModel>().attendanceRate * 100).toInt()}%',
                     style: TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
@@ -67,7 +69,7 @@ class AttendanceScreen extends StatelessWidget {
                       Column(
                         children: [
                           Text(
-                            '21',
+                            '${context.watch<AttendanceViewModel>().present}',
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -86,7 +88,7 @@ class AttendanceScreen extends StatelessWidget {
                       Column(
                         children: [
                           Text(
-                            '1',
+                            '${context.watch<AttendanceViewModel>().late}',
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -105,7 +107,7 @@ class AttendanceScreen extends StatelessWidget {
                       Column(
                         children: [
                           Text(
-                            '3',
+                            '${context.watch<AttendanceViewModel>().absent}',
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -205,7 +207,7 @@ class AttendanceScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        // Handle mark present
+                        context.read<AttendanceViewModel>().markPresent();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,

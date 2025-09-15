@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodels/auth_viewmodel.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -264,25 +266,54 @@ class _SignupScreenState extends State<SignupScreen> {
               SizedBox(
                 width: double.infinity,
                 height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/onboarding');
+                child: Consumer<AuthViewModel>(
+                  builder: (context, authViewModel, child) {
+                    return ElevatedButton(
+                      onPressed: authViewModel.isLoading ? null : () async {
+                        final name = '${_firstNameController.text} ${_lastNameController.text}';
+                        final success = await authViewModel.register(
+                          _emailController.text,
+                          _passwordController.text,
+                          name,
+                        );
+                        if (success && mounted) {
+                          Navigator.pushReplacementNamed(context, '/onboarding');
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4A90E2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: authViewModel.isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              'Create Account',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                    );
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A90E2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Create Account',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
                 ),
+              ),
+              // Error message
+              Consumer<AuthViewModel>(
+                builder: (context, authViewModel, child) {
+                  if (authViewModel.error != null) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Text(
+                        authViewModel.error!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
               const SizedBox(height: 24),
               // Sign in link
